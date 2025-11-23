@@ -1,0 +1,78 @@
+# Docker Compose para Arquitetura de Microsserviços
+# Cada serviço é independente com seu próprio container e banco de dados
+
+version: '3.8'
+
+services:
+  # API Gateway - Ponto de entrada único
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "9000:9000"
+    depends_on:
+      - auth-service
+      - product-service
+      - order-service
+      - payment-service
+    networks:
+      - microservices-network
+    environment:
+      - FLASK_ENV=development
+
+  # Auth Microservice
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "6001:6001"
+    networks:
+      - microservices-network
+    volumes:
+      - auth-data:/app
+    environment:
+      - FLASK_ENV=development
+
+  # Product Microservice
+  product-service:
+    build: ./product-service
+    ports:
+      - "6002:6002"
+    networks:
+      - microservices-network
+    volumes:
+      - product-data:/app
+    environment:
+      - FLASK_ENV=development
+
+  # Order Microservice
+  order-service:
+    build: ./order-service
+    ports:
+      - "6003:6003"
+    depends_on:
+      - auth-service
+      - product-service
+    networks:
+      - microservices-network
+    volumes:
+      - order-data:/app
+    environment:
+      - FLASK_ENV=development
+
+  # Payment Microservice
+  payment-service:
+    build: ./payment-service
+    ports:
+      - "6004:6004"
+    networks:
+      - microservices-network
+    environment:
+      - FLASK_ENV=development
+
+networks:
+  microservices-network:
+    driver: bridge
+
+volumes:
+  auth-data:
+  product-data:
+  order-data:

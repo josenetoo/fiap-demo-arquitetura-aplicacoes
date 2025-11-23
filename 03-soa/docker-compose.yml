@@ -1,0 +1,68 @@
+# Docker Compose para arquitetura SOA
+# Demonstra múltiplos serviços + ESB
+
+version: '3.8'
+
+services:
+  # API Gateway
+  gateway:
+    build: ./gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      - auth-service
+      - product-service
+      - order-service
+      - payment-service
+    environment:
+      - ESB_HOST=esb
+    networks:
+      - soa-network
+
+  # Serviço de Autenticação
+  auth-service:
+    build: ./services/auth_service
+    ports:
+      - "5010:5010"
+    environment:
+      - SERVICE_NAME=auth-service
+      - ESB_HOST=esb
+    networks:
+      - soa-network
+
+  # Serviço de Produtos
+  product-service:
+    build: ./services/product_service
+    ports:
+      - "5011:5011"
+    environment:
+      - SERVICE_NAME=product-service
+      - ESB_HOST=esb
+    networks:
+      - soa-network
+
+  # Serviço de Pedidos
+  order-service:
+    build: ./services/order_service
+    ports:
+      - "5012:5012"
+    environment:
+      - SERVICE_NAME=order-service
+      - ESB_HOST=esb
+    networks:
+      - soa-network
+
+  # Serviço de Pagamento
+  payment-service:
+    build: ./services/payment_service
+    ports:
+      - "5013:5013"
+    environment:
+      - SERVICE_NAME=payment-service
+      - ESB_HOST=esb
+    networks:
+      - soa-network
+
+networks:
+  soa-network:
+    driver: bridge
